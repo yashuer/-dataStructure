@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<meta charset="utf-8">
+<head>
+       <title>二叉搜索树的生成</title>
+       <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js "></script>
+       <script type="text/javascript" src="https://cdn.bootcss.com/d3/4.9.1/d3.min.js"></script>
+       <style type="text/css">
+          *{
+            margin:0;
+            padding:0;
+          }
+          input{
+            position: absolute;
+            width: 100px;
+            height: 50px;
+            left: 50%;
+            margin-left: -50px;
+            background-color: #26ce1b;
+          }
+       </style>
+</head>
+
+<body>
+       <input id="btn_start" type="button" value="start" />
+       <div id="show" width="100%" height="100%">
+       </div>
+<script>
+       function BST(bstRoot){
+              this.root = bstRoot||null;
+       }
+       BST.prototype = {
+              constructor:BST,
+              insert:bstInsert,
+              order:bstOrder
+       }
+       function Bst_node(bst_data){
+              this.data = bst_data;
+              this.lchild = null;
+              this.rchild = null;
+       }
+       Bst_node.prototype = {
+              constructor:Bst_node
+       }       
+       function bstInsert(value){
+              var bstNode = new Bst_node(value);
+              if(this.root == null){
+                     this.root = bstNode;
+              }else{
+                     var current = this.root,parent;
+                     while(current){
+                                   parent = current;
+                            if(value<current.data){
+                                   current = current.lchild;
+                                   if(current == null){
+                                          parent.lchild = bstNode;
+                                          break;
+                                   }
+
+                            }else if(value>current.data){
+                                   current = current.rchild;
+                                   if(current == null){
+                                          parent.rchild = bstNode;
+                                          break;
+                                   }
+                            }else{
+                                   //相等情况(正常情况不可能)
+                                   break;
+                            }
+                     }
+              }
+       }
+       function bstOrder(type){//L、D、R分中序、先序、后序
+              var orderL = function(node){
+                    if(node != null){
+                            orderL(node.lchild);
+                            console.log(node.data);
+                            orderL(node.rchild);
+                     } 
+              }
+              var orderD = function(node){
+                    if(node != null){
+                            console.log(node.data);
+                            orderD(node.lchild);
+                            orderD(node.rchild);
+                     } 
+              }
+              var orderR = function(node){
+                    if(node != null){
+                            orderR(node.rchild);
+                            orderR(node.lchild);
+                            console.log(node.data);
+                     } 
+              }
+              switch(type){
+                     case 'L':orderL(this.root);break;
+                     case 'D':orderD(this.root);break;
+                     case 'R':orderR(this.root);break;
+                     default :orderL(this.root);break;
+              }
+       }      
+</script>       
+<script>
+       var duraTime = 2000;
+       var jumpHeight = 100;
+       var baseSvg = d3.select("#show").append("svg")
+                                       .attr("width",1900)
+                                       .attr("height",900)
+                                       .attr("class","baseSvg");
+       var arr = '123456789'.split('');
+       var depth = Math.floor(Math.log(arr.length)/ Math.log(2)) + 1;//二叉树深度
+       function Num(d,x,y){
+                     this.text = d;
+                     this.dx = x;
+                     this.dy = y;
+                     this.id = d;
+       }
+
+       Num.prototype = {
+                     constructor:Num,
+                     fontSize:16,
+                     fontColor:"black",
+                     dy:300
+       } 
+
+       var rootBST = new Bst_node(arr[Math.pow(2,depth-1)-1]);
+       var bst = new BST(rootBST);
+       var initBST = function(){
+              for (var i = arr.length - 1; i >= 0; i--) {
+                     bst.insert(arr[i]);
+              }
+       }
+       initBST();
+       bst.order('D');      
+
+       var arrTrans = arr.map(function(d,i){
+              var y;
+              if((i+1-1)%2==0) y = (depth-1)*100;
+              if((i+1-2)%4==0) y = (depth-2)*100;
+              if((i+1-4)%8==0) y = (depth-3)*100;
+              if((i+1-8)%16==0) y = (depth-4)*100;
+              return new Num(d,i*50,y);
+       });
+       var drawBST = function(){
+       var bstG = baseSvg.append("g").attr("class","BST").attr("transform", "translate(50,50)");
+       var update = bstG.selectAll('node').data(arrTrans,function(d){return d.id});
+       var enter = update.enter();
+       enter.append("g").attr("class","node").each(function(d,i){
+                                          var nodeG = d3.select(this);
+                                          nodeG.attr("transform","translate("+d.dx+","+d.dy+")");
+                                          nodeG.append("text").text(d.text);
+                            });
+       }
+
+       $(function(){
+        $("#btn_start").click(function(){
+          drawBST();
+        })
+       })
+</script>
+</body>
+</html>

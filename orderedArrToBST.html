@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<meta charset="utf-8">
+<head>
+       <title>二叉搜索树的生成</title>
+       <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js "></script>
+       <script type="text/javascript" src="https://cdn.bootcss.com/d3/4.9.1/d3.min.js"></script>
+       <style type="text/css">
+          *{
+            margin:0;
+            padding:0;
+          }
+          input{
+            position: absolute;
+            width: 100px;
+            height: 50px;
+            left: 50%;
+            margin-left: -50px;
+            background-color: #26ce1b;
+          }
+       </style>
+</head>
+
+<script>
+   function Bst_node(bst_data){
+          this.data = bst_data;
+          this.lchild = null;
+          this.rchild = null;
+   }
+   Bst_node.prototype = {
+          constructor:Bst_node
+   }       
+
+   function Node(d,x,y){
+                     this.text = d;
+                     this.dx = x;
+                     this.dy = y;
+                     this.id = d;
+    }
+    Node.prototype = {
+                     constructor:Node,
+                     fontSize:16,
+                     fontColor:"black",
+                     dy:300
+       }  
+
+
+   function getBST(arr,start,end){
+       var mid = Math.ceil((start + end)/2);
+       var root = new Bst_node(arr[mid]);
+       if(start==end){
+              return root;
+       }
+       if(start<=mid-1){
+              root.lchild = getBST(arr,start,mid-1);
+       }
+       if(end>=mid+1){
+              root.rchild = getBST(arr,mid+1,end);
+       }
+       return root;
+   }
+   var arr = [1,2,3,4,5,6,7,8];
+   var result = getBST(arr,0,arr.length-1);
+   // document.write(arr);
+    console.log(result);
+   var arrTrans = [];
+   var depth = Math.floor(Math.log(arr.length)/ Math.log(2)) + 1;//二叉树深度
+   var transPos = function(node){
+       var lc = node.lchild;
+       var rc = node.rchild
+       if(lc){
+          lc.y = node.y+100;
+          lc.x = node.x - (depth-lc.y/100) *50;
+          arrTrans.push(new Node(lc.data,lc.x,lc.y))
+          transPos(node.lchild);
+       }
+       if(rc){
+          rc.y = node.y+100;
+          rc.x = node.x + (depth-rc.y/100) *50;
+          arrTrans.push(new Node(rc.data,rc.x,rc.y))
+          transPos(node.rchild)
+       }
+   }
+
+   var duraTime = 2000;
+       
+   result.y = 0;
+   result.x =  Math.ceil((arr.length-1)/2)*50;
+   arrTrans.push(new Node(result.data,result.x,result.y))
+   transPos(result);                                 
+   var drawBST = function(){
+      var baseSvg = d3.select("#show").append("svg")
+                                       .attr("width",1900)
+                                       .attr("height",900)
+                                       .attr("class","baseSvg");
+       var bstG = baseSvg.append("g").attr("class","BST").attr("transform", "translate(150,50)");
+       var update = bstG.selectAll('node').data(arrTrans,function(d){return d.id});
+       var enter = update.enter();
+       enter.append("g").attr("class","node").each(function(d,i){
+                                          var nodeG = d3.select(this);
+                                          nodeG.append("text").text(d.text);
+                                          nodeG.attr("transform","translate("+d.dx+","+depth*100+")")
+                                               .transition().duration(duraTime*(d.dy/100+1))
+                                               .attr("transform","translate("+d.dx+","+d.dy+")");
+                            });
+       }
+
+   $(function(){
+    $("#btn_start").click(function(){
+      drawBST();
+    })
+   })
+</script>
+<body>
+       <input id="btn_start" type="button" value="start" />
+       <div id="show" width="100%" height="100%">
+       </div>
+</body>
+</html>
